@@ -1,0 +1,53 @@
+services:
+  notification-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://notification:notification@postgres:5432/notification_db?schema=public
+      RABBITMQ_URI: amqp://guest:guest@rabbitmq:5672
+      RABBITMQ_REQUEST_QUEUE: notification.transaction.requested
+      RABBITMQ_CONFIRMATION_QUEUE: notification.transaction.confirmed
+      RABBITMQ_PREFETCH_COUNT: 10
+      NOTIFICATION_CHANNEL: LOG
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: notification_db
+      POSTGRES_USER: notification
+      POSTGRES_PASSWORD: notification
+    ports:
+      - "5433:5432"
+    volumes:
+      - notification-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notification -d notification_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - notification-rabbitmq:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  notification-postgres:
+  notification-rabbitmq:
