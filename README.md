@@ -1,6 +1,8 @@
-# Comprefácil Notification Service
+# CompreFácil Notification Service
 
-Microsserviço NestJS independente responsável por consumir eventos de transação do RabbitMQ e persistir notificações no PostgreSQL.
+Microsserviço em NestJS responsável pelo consumo assíncrono de eventos de transação, persistência de notificações e envio de avisos ao usuário, integrado de forma desacoplada ao **CompreFácil Payment Service** ([`comprefacil-payment-service`](https://github.com/luizacosta92/comprefacil-payment-service.git)).
+
+Desenvolvido sob princípios de arquitetura distribuída, o serviço escuta eventos de solicitação e confirmação de pagamento via mensageria assíncrona (RabbitMQ), realiza a persistência em banco relacional (Postgres via Prisma) com controle de duplicidade e executa o envio das notificações com tratamento de erros.
 
 ## Executar
 
